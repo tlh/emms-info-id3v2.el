@@ -64,8 +64,8 @@
     (info-note         . "COMM")
     (info-genre        . "TCON")
     (info-playing-time . "TLEN"))
-  "List of lists of supported info parameters and their id3v2
-frame identifiers"
+  "alist of supported info parameters and their id3v2 frame
+identifiers"
   :type 'alist
   :group 'emms-info-id3v2)
 
