@@ -46,6 +46,7 @@
 
 ;;; Code:
 
+(require 'cl)
 (require 'emms-info)
 
 (defgroup emms-info-id3v2 nil
@@ -54,18 +55,18 @@
   :version "1.0")
 
 (defcustom emms-info-id3v2-frames
-  '((info-artist       . "TPE1")
-    (info-composer     . "TCOM")
-    (info-performer    . "TPE2")
-    (info-title        . "TIT2")
-    (info-album        . "TALB")
-    (info-tracknumber  . "TRCK")
-    (info-year         . "TYER")
-    (info-note         . "COMM")
-    (info-genre        . "TCON")
-    (info-playing-time . "TLEN"))
-  "alist of supported info parameters and their id3v2 frame
-identifiers"
+  '(("TPE1" . info-artist)
+    ("TCOM" . info-composer)
+    ("TPE2" . info-performer)
+    ("TIT2" . info-title)
+    ("TALB" . info-album)
+    ("TRCK" . info-tracknumber)
+    ("TYER" . info-year)
+    ("COMM" . info-note)
+    ("TCON" . info-genre)
+    ("TLEN" . info-playing-time))
+  "An alist mapping supported id3v2 frames to the corresponding
+info parameters."
   :type 'alist
   :group 'emms-info-id3v2)
 
@@ -80,12 +81,13 @@ identifiers"
              (string-match "\\.[Mm][Pp]3\\'" (emms-track-name track)))
     (with-temp-buffer
       (call-process emms-info-id3v2-program nil t nil "-l" (emms-track-name track))
-      (dolist (frame emms-info-id3v2-frames)
-        (goto-char (point-min))
-        (ignore-errors
-          (re-search-forward (format "^%s[^\n].+?: \\([^\n]+?\\)\n" (cdr frame)))
-          (when (match-string 1)
-            (emms-track-set track (car frame) (match-string 1))))))))
+      (goto-char (point-min))
+      (while (re-search-forward "^\\([0-9A-Z]\\{4\\}\\) .+?: \\(.+\\)$" nil t)
+        (let* ((frame (match-string 1))
+               (value (match-string 2))
+               (param (cdr (assoc-string frame emms-info-id3v2-frames))))
+          (when param
+            (emms-track-set track param value)))))))
 
 (provide 'emms-info-id3v2)
 
