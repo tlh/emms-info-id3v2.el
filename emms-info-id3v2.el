@@ -46,7 +46,6 @@
 
 ;;; Code:
 
-(require 'cl)
 (require 'emms-info)
 
 (defgroup emms-info-id3v2 nil
@@ -65,13 +64,12 @@
     ("COMM" . info-note)
     ("TCON" . info-genre)
     ("TLEN" . info-playing-time))
-  "An alist mapping supported id3v2 frames to the corresponding
-info parameters."
+  "An alist mapping id3v2 frames to emms info fields."
   :type 'alist
   :group 'emms-info-id3v2)
 
 (defcustom emms-info-id3v2-program "id3v2"
-  "Program (should be 'id3v2') to use for id3v2 info."
+  "Program (should be \"id3v2\") to use for id3v2 info."
   :type 'string
   :group 'emms-info-id3v2)
 
@@ -83,11 +81,9 @@ info parameters."
       (call-process emms-info-id3v2-program nil t nil "-l" (emms-track-name track))
       (goto-char (point-min))
       (while (re-search-forward "^\\([0-9A-Z]\\{4\\}\\) .+?: \\(.+\\)$" nil t)
-        (let* ((frame (match-string 1))
-               (value (match-string 2))
-               (param (cdr (assoc-string frame emms-info-id3v2-frames))))
-          (when param
-            (emms-track-set track param value)))))))
+        (let ((field (cdr (assoc (match-string 1) emms-info-id3v2-frames))))
+          (when field
+            (emms-track-set track field (match-string 2))))))))
 
 (provide 'emms-info-id3v2)
 
