@@ -64,7 +64,9 @@
     ("COMM" . info-note)
     ("TCON" . info-genre)
     ("TLEN" . info-playing-time))
-  "An alist mapping id3v2 frames to emms info fields."
+  "An alist mapping id3v2 frames to emms info fields.
+Customize this if you wish to map different id3v2 frames to emms
+info fields."
   :type 'alist
   :group 'emms-info-id3v2)
 
@@ -78,12 +80,13 @@
   (when (and (eq 'file (emms-track-type track))
              (string-match "\\.[Mm][Pp]3\\'" (emms-track-name track)))
     (with-temp-buffer
-      (call-process emms-info-id3v2-program nil t nil "-l" (emms-track-name track))
-      (goto-char (point-min))
-      (while (re-search-forward "^\\([0-9A-Z]\\{4\\}\\) .+?: \\(.+\\)$" nil t)
-        (let ((field (cdr (assoc (match-string 1) emms-info-id3v2-frames))))
-          (when field
-            (emms-track-set track field (match-string 2))))))))
+      (when (zerop (call-process emms-info-id3v2-program nil t nil "-l"
+                                 (emms-track-name track)))
+        (goto-char (point-min))
+        (while (re-search-forward "^\\([0-9A-Z]\\{4\\}\\) .+?: \\(.+\\)$" nil t)
+          (let ((field (cdr (assoc (match-string 1) emms-info-id3v2-frames))))
+            (when field
+              (emms-track-set track field (match-string 2)))))))))
 
 (provide 'emms-info-id3v2)
 
